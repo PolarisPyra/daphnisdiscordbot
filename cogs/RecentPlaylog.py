@@ -6,7 +6,7 @@ from database import get_db_connection
 from dotenv import load_dotenv
 
 load_dotenv(".env")
-URL: str = os.getenv("URL")
+URL = os.getenv("URL")
 
 class RecentPlayLog(commands.Cog):
     def __init__(self, bot):
@@ -62,49 +62,49 @@ class RecentPlayLog(commands.Cog):
         if self.cursor is None:
             await interaction.response.send_message("Database connection failed.", ephemeral=True)
             return
-    
+
         try:
             self.cursor.execute("SELECT id FROM aime_user WHERE username = %s", (username,))
             user_row = self.cursor.fetchone()
-        
+
             if user_row is None:
                 await interaction.response.send_message("User not found.", ephemeral=True)
                 return
-        
-            user_id = user_row[0] 
 
-            # starts at 0 
+            user_id = user_row[0]
+
+            # starts at 0
             query = """
                 WITH RankedScores AS (
-                    SELECT 
-                        csp.maxCombo, 
-                        csp.isFullCombo, 
-                        csp.userPlayDate, 
-                        csp.playerRating, 
-                        csp.isAllJustice, 
+                    SELECT
+                        csp.maxCombo,
+                        csp.isFullCombo,
+                        csp.userPlayDate,
+                        csp.playerRating,
+                        csp.isAllJustice,
                         csp.score,
-                        csp.judgeHeaven, 
-                        csp.judgeGuilty, 
-                        csp.judgeJustice, 
+                        csp.judgeHeaven,
+                        csp.judgeGuilty,
+                        csp.judgeJustice,
                         csp.judgeAttack,
-                        csp.judgeCritical, 
-                        csp.isClear, 
-                        csp.skillId, 
-                        csp.isNewRecord, 
-                        csm.chartId,  
-                        csm.title, 
-                        csm.level, 
-                        csm.genre, 
-                        csm.jacketPath, 
+                        csp.judgeCritical,
+                        csp.isClear,
+                        csp.skillId,
+                        csp.isNewRecord,
+                        csm.chartId,
+                        csm.title,
+                        csm.level,
+                        csm.genre,
+                        csm.jacketPath,
                         csm.artist,
                         au.username
-                    FROM 
+                    FROM
                         chuni_score_playlog csp
                         JOIN chuni_profile_data d ON csp.user = d.user
                         JOIN chuni_static_music csm ON csp.musicId = csm.songId AND csp.level = csm.chartId AND csm.version = d.version
                         JOIN aime_card a ON d.user = a.user
-                        JOIN aime_user au ON a.user = au.id 
-                    WHERE 
+                        JOIN aime_user au ON a.user = au.id
+                    WHERE
                         a.user = %s AND d.version = %s
             """
             params = [user_id, version]
@@ -114,49 +114,49 @@ class RecentPlayLog(commands.Cog):
                 query += " AND csm.title LIKE %s"
                 params.append(f"%{title}%")
 
-            # starts at 0 
+            # starts at 0
             query += """
                 )
-                SELECT 
-                    maxCombo, 
-                    isFullCombo, 
-                    userPlayDate, 
-                    playerRating, 
-                    isAllJustice, 
+                SELECT
+                    maxCombo,
+                    isFullCombo,
+                    userPlayDate,
+                    playerRating,
+                    isAllJustice,
                     score,
-                    judgeHeaven, 
-                    judgeGuilty, 
-                    judgeJustice, 
+                    judgeHeaven,
+                    judgeGuilty,
+                    judgeJustice,
                     judgeAttack,
-                    judgeCritical, 
-                    isClear, 
-                    skillId, 
-                    isNewRecord, 
-                    chartId,  
-                    title, 
-                    level, 
-                    genre, 
-                    jacketPath, 
+                    judgeCritical,
+                    isClear,
+                    skillId,
+                    isNewRecord,
+                    chartId,
+                    title,
+                    level,
+                    genre,
+                    jacketPath,
                     artist,
                     username
-                FROM 
+                FROM
                     RankedScores
-                ORDER BY 
+                ORDER BY
                     userPlayDate DESC
                 LIMIT 1
             """
             self.cursor.execute(query, params)
             row = self.cursor.fetchone()
-        
+
             if row is not None:
 
                 title_text = f"[NEW] {row[15]}" if row[13] == 1 else row[15]
-                jacketPath = row[18]  
+                jacketPath = row[18]
                 thumbnailURL = f"https://{URL}/jacketArts/{jacketPath.replace('.dds', '.png')}" if jacketPath else None
                 difficultyName = self.DifficultyMap.get(row[14], "Unknown")
-                level = row[16] 
+                level = row[16]
                 difficultyWithLevel = f"{difficultyName} (Level {level})"
-                rank = self.get_grade(row[5])  
+                rank = self.get_grade(row[5])
 
                 embed = discord.Embed(
                     title=title_text,
@@ -166,10 +166,10 @@ class RecentPlayLog(commands.Cog):
                     embed.set_thumbnail(url=thumbnailURL)
 
                 embed.add_field(name="Artist", value=row[19], inline=True)
-                embed.add_field(name="Played by", value=row[20], inline=True) 
+                embed.add_field(name="Played by", value=row[20], inline=True)
                 embed.add_field(name="Difficulty", value=difficultyWithLevel, inline=True)
                 embed.add_field(name="Score", value=row[5], inline=True)
-                embed.add_field(name="Rank", value=rank, inline=True)  
+                embed.add_field(name="Rank", value=rank, inline=True)
                 embed.add_field(name="Max Combo", value=row[0], inline=True)
                 embed.add_field(
                     name="Judgement:",
@@ -191,72 +191,72 @@ class RecentPlayLog(commands.Cog):
         if self.cursor is None:
             await interaction.response.send_message("Database connection failed.", ephemeral=True)
             return
-        
+
         try:
             self.cursor.execute("SELECT id FROM aime_user WHERE username = %s", (username,))
             user_row = self.cursor.fetchone()
-        
+
             if user_row is None:
                 await interaction.response.send_message("User not found.", ephemeral=True)
                 return
-            
+
             user_id = user_row[0]
 
             self.cursor.execute("""
                 WITH RankedScores AS (
-                    SELECT 
-                        csp.maxCombo, 
-                        csp.isFullCombo, 
-                        csp.userPlayDate, 
-                        csp.playerRating, 
-                        csp.isAllJustice, 
+                    SELECT
+                        csp.maxCombo,
+                        csp.isFullCombo,
+                        csp.userPlayDate,
+                        csp.playerRating,
+                        csp.isAllJustice,
                         csp.score,
-                        csp.judgeHeaven, 
-                        csp.judgeGuilty, 
-                        csp.judgeJustice, 
+                        csp.judgeHeaven,
+                        csp.judgeGuilty,
+                        csp.judgeJustice,
                         csp.judgeAttack,
-                        csp.judgeCritical, 
-                        csp.isClear, 
-                        csp.skillId, 
-                        csp.isNewRecord, 
-                        csm.chartId,  
-                        csm.title, 
-                        csm.level, 
-                        csm.genre, 
-                        csm.jacketPath, 
+                        csp.judgeCritical,
+                        csp.isClear,
+                        csp.skillId,
+                        csp.isNewRecord,
+                        csm.chartId,
+                        csm.title,
+                        csm.level,
+                        csm.genre,
+                        csm.jacketPath,
                         csm.artist
-                    FROM 
+                    FROM
                         chuni_score_playlog csp
                         JOIN chuni_profile_data d ON csp.user = d.user
                         JOIN chuni_static_music csm ON csp.musicId = csm.songId AND csp.level = csm.chartId AND csm.version = d.version
                         JOIN aime_card a ON d.user = a.user
-                    WHERE 
+                    WHERE
                         a.user = %s AND d.version = %s
                 )
-                SELECT 
-                    maxCombo, 
-                    isFullCombo, 
-                    userPlayDate, 
-                    playerRating, 
-                    isAllJustice, 
+                SELECT
+                    maxCombo,
+                    isFullCombo,
+                    userPlayDate,
+                    playerRating,
+                    isAllJustice,
                     score,
-                    judgeHeaven, 
-                    judgeGuilty, 
-                    judgeJustice, 
+                    judgeHeaven,
+                    judgeGuilty,
+                    judgeJustice,
                     judgeAttack,
-                    judgeCritical, 
-                    isClear, 
-                    skillId, 
-                    isNewRecord, 
-                    chartId,  
-                    title, 
-                    level, 
-                    genre, 
-                    jacketPath, 
+                    judgeCritical,
+                    isClear,
+                    skillId,
+                    isNewRecord,
+                    chartId,
+                    title,
+                    level,
+                    genre,
+                    jacketPath,
                     artist
-                FROM 
+                FROM
                     RankedScores
-                ORDER BY 
+                ORDER BY
                     userPlayDate DESC
                 LIMIT 3
             """, (user_id, version))

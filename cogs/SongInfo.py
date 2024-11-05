@@ -6,7 +6,7 @@ from database import get_db_connection
 from dotenv import load_dotenv
 
 load_dotenv(".env")
-URL: str = os.getenv("URL")
+URL = os.getenv("URL")
 
 class SongInfo(commands.Cog):
     def __init__(self, bot):
@@ -32,7 +32,7 @@ class SongInfo(commands.Cog):
         if self.cursor is None:
             await interaction.response.send_message("Database connection failed.", ephemeral=False)
             return
-        
+
         def getChartIdByDifficulty(difficultyName):
             for chart_id, diff_name in self.DifficultyMap.items():
                 if diff_name == difficultyName.upper():
@@ -42,20 +42,20 @@ class SongInfo(commands.Cog):
         if difficulty and difficulty.upper() not in self.DifficultyMap.values():
             await interaction.response.send_message("Invalid difficulty level. Please choose from: EASY, ADVANCE, EXPERT, MASTER, ULTIMA, WORLDS END.", ephemeral=True)
             return
-        
+
         try:
-            # starts at 0 
+            # starts at 0
             query = """
-                SELECT 
-                    chartId, 
-                    title, 
-                    level, 
-                    genre, 
-                    jacketPath, 
+                SELECT
+                    chartId,
+                    title,
+                    level,
+                    genre,
+                    jacketPath,
                     artist
-                FROM 
+                FROM
                     chuni_static_music
-                WHERE 
+                WHERE
                     title LIKE %s
                     AND chartId = %s
             """
@@ -66,20 +66,20 @@ class SongInfo(commands.Cog):
             row = self.cursor.fetchone()
 
             if row is not None:
-                
+
                 # Setting up the embed
-                jacketPath = row[4]  
+                jacketPath = row[4]
                 thumbnailURL = f"https://{URL}/jacketArts/{jacketPath.replace('.dds', '.png')}" if jacketPath else None
                 level = row[2]
                 difficultyName = difficulty.upper() if difficulty else "MASTER"
                 difficultyWithLevel = f"{difficultyName} (Level {level})"
-                
+
                 # Create the embed
                 embed = discord.Embed(
                     title=f"Song Information: {row[1]}",
                     color=discord.Color.blue()
                 )
-                
+
                 if thumbnailURL:
                     embed.set_thumbnail(url=thumbnailURL)
 
