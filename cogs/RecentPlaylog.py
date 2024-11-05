@@ -173,7 +173,7 @@ class RecentPlayLog(commands.Cog):
                 embed.add_field(name="Max Combo", value=row[0], inline=True)
                 embed.add_field(
                     name="Judgement:",
-                    value=f"**Justice Critical**: {row[10]}\n**Justice**: {row[8]}\n**Attack**: {row[9]}\n**Miss**: {row[7]}",
+                        value=f"**Justice Critical**: {row[10] + row[6]}\n**Justice**: {row[8]}\n**Attack**: {row[9]}\n**Miss**: {row[7]}",
                     inline=True
                 )
 
@@ -288,8 +288,7 @@ class RecentPlayLog(commands.Cog):
                     embed.add_field(name="Max Combo", value=row[0], inline=True)
                     embed.add_field(
                         name="Judgement",
-                        value=f"**Justice Critical**: {row[10]}\n**Justice**: {row[8]}\n**Attack**: {row[9]}\n**Miss**: {row[7]}",
-                        inline=True
+                        value=f"**Justice Critical**: {row[10] + row[6]}\n**Justice**: {row[8]}\n**Attack**: {row[9]}\n**Miss**: {row[7]}",                        inline=True
                     )
                     embeds.append(embed)
 
