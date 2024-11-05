@@ -31,10 +31,11 @@ async def load():
             await bot.load_extension(f"cogs.{filename[:-3]}")
             print(f"Loaded cog: {filename[:-3]}")
 
-
 async def main():
     async with bot:
         await load()
+        if TOKEN is None:
+            raise ValueError("Discord token not found. Make sure DISCORD_TOKEN is set in your .env file")
         await bot.start(TOKEN)
 
 asyncio.run(main())
